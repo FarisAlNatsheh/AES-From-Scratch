@@ -1,10 +1,13 @@
 package com.gju.computersec.aes;
 
+import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
+
 public class Round {
-    private byte[][] keyBytes;
+    private byte[] keyBytes;
+    private byte[][][] roundKeys;
 
-
-    private static final byte[][] S_BOX = {
+    public static final byte[][] S_BOX = {
             {(byte)0x63, (byte)0x7C, (byte)0x77, (byte)0x7B, (byte)0xF2, (byte)0x6B, (byte)0x6F, (byte)0xC5, (byte)0x30, (byte)0x01, (byte)0x67, (byte)0x2B, (byte)0xFE, (byte)0xD7, (byte)0xAB, (byte)0x76},
             {(byte)0xCA, (byte)0x82, (byte)0xC9, (byte)0x7D, (byte)0xFA, (byte)0x59, (byte)0x47, (byte)0xF0, (byte)0xAD, (byte)0xD4, (byte)0xA2, (byte)0xAF, (byte)0x9C, (byte)0xA4, (byte)0x72, (byte)0xC0},
             {(byte)0xB7, (byte)0xFD, (byte)0x93, (byte)0x26, (byte)0x36, (byte)0x3F, (byte)0xF7, (byte)0xCC, (byte)0x34, (byte)0xA5, (byte)0xE5, (byte)0xF1, (byte)0x71, (byte)0xD8, (byte)0x31, (byte)0x15},
@@ -23,21 +26,31 @@ public class Round {
             {(byte)0x8C, (byte)0xA1, (byte)0x89, (byte)0x0D, (byte)0xBF, (byte)0xE6, (byte)0x42, (byte)0x68, (byte)0x41, (byte)0x99, (byte)0x2D, (byte)0x0F, (byte)0xB0, (byte)0x54, (byte)0xBB, (byte)0x16}
     };
     public Round(String key){
-        keyBytes = stringToBytes16(key);
+        keyBytes = key.getBytes(StandardCharsets.UTF_8);
+        roundKeys = splitInto4x4Matrices(new KeyExpander().keyExpansion(keyBytes));
     }
-    private byte[][] stringToBytes16(String input) {
-        byte[][] byteArray = new byte[4][4];
 
-        // Convert each character to byte and store in the 4x4 byte array
-        int index = 0;
-        for (int i = 0; i < 4; i++) {
-            for (int j = 0; j < 4; j++) {
-                byteArray[i][j] = (byte) input.charAt(index);
-                index++;
+    public byte[][][] splitInto4x4Matrices(byte[] byteArray) {
+        int numMatrices = 11;
+        int bytesPerMatrix = 16; // 4x4 matrix
+        byte[][][] matrices = new byte[numMatrices][4][4];
+
+        for (int i = 0; i < numMatrices; i++) {
+            int start = i * bytesPerMatrix;
+            int end = Math.min(start + bytesPerMatrix, byteArray.length);
+
+            for (int row = 0; row < 4; row++) {
+                for (int col = 0; col < 4; col++) {
+                    int index = (row * 4 + col) + start;
+                    if (index < end) {
+                        matrices[i][row][col] = byteArray[index];
+                    } else {
+                        matrices[i][row][col] = 0; // Fill with 0 if not enough bytes
+                    }
+                }
             }
         }
-
-        return byteArray;
+        return matrices;
     }
     public byte[][] subBytes(byte[][] state) {
         byte[][] newState = new byte[4][4];
@@ -91,6 +104,14 @@ public class Round {
         }
         return state;
     }
+
+
+    public byte[][] addRoundKey(byte[][] state, int roundNum){
+        state = xorByteArrays(state, roundKeys[roundNum]);
+        return state;
+    }
+
+
     private int mul2(int value) {
         if (value < 0) {
             value += 256;
@@ -100,6 +121,30 @@ public class Round {
 
     private int mul3(int value) {
         return mul2(value) ^ value;
+    }
+
+
+    public byte[][] xorByteArrays(byte[][] array1, byte[][] array2) {
+        // Check if the dimensions of the input arrays match
+        if (array1.length != array2.length) {
+            throw new IllegalArgumentException("Array dimensions must match.");
+        }
+
+        int numRows = array1.length;
+        int numCols = array1[0].length;
+        byte[][] result = new byte[numRows][numCols];
+
+        for (int i = 0; i < numRows; i++) {
+            if (array1[i].length != array2[i].length) {
+                throw new IllegalArgumentException("Array row lengths must match.");
+            }
+
+            for (int j = 0; j < numCols; j++) {
+                result[i][j] = (byte) (array1[i][j] ^ array2[i][j]);
+            }
+        }
+
+        return result;
     }
 
 }
