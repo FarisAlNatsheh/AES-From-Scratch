@@ -1,4 +1,4 @@
-package com.gju.computersec;
+package com.gju.computersec.b64;
 
 import org.apache.commons.codec.binary.Base64;
 
