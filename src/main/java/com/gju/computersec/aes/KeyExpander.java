@@ -11,25 +11,6 @@ public class KeyExpander {
             0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1B, 0x36
     };
 
-
-    public static void main(String[] args) {
-        byte[] key = new byte[] {
-                (byte) 0x2b, (byte) 0x7e, (byte) 0x15, (byte) 0x16,
-                (byte) 0x28, (byte) 0xae, (byte) 0xd2, (byte) 0xa6,
-                (byte) 0xab, (byte) 0xf7, (byte) 0x15, (byte) 0x88,
-                (byte) 0x09, (byte) 0xcf, (byte) 0x4f, (byte) 0x3c
-        };
-
-
-        byte[] expandedKey = new KeyExpander().keyExpansion(key);
-
-        // Print expanded key
-        for (int i = 0; i < EXPANDED_KEY_SIZE; i++) {
-            if (i % WORD_SIZE == 0 && i != 0) System.out.println();
-            System.out.printf("%02x ", expandedKey[i]);
-        }
-    }
-
     public byte[] keyExpansion(byte[] key) {
         byte[] expandedKey = new byte[EXPANDED_KEY_SIZE];
         int currentSize = 0;
