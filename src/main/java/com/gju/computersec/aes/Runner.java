@@ -2,33 +2,57 @@ package com.gju.computersec.aes;
 
 import org.apache.commons.codec.binary.Base64;
 
-import java.lang.reflect.Array;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 
 public class Runner {
-    Round round;
-    public void runAlgorithm(String key, String text){
-        round = new Round(key);
+    Encryptor encryptor;
+    Decryptor decryptor;
+    public byte[] runEncryptionAlgorithm(String key, String text){
+        encryptor = new Encryptor(key);
         byte[][] byteText = stringToBytes16(text);
 
-        byteText = round.addRoundKey(byteText,0);
+        byteText = encryptor.addRoundKey(byteText,0);
 
         for(int i =0; i < 9; i++){
-            byteText = round.subBytes(byteText);
-            byteText = round.shiftRows(byteText);
-            byteText = round.mixColumns(byteText);
-            byteText = round.addRoundKey(byteText,i);
+            byteText = encryptor.subBytes(byteText);
+            byteText = encryptor.shiftRows(byteText);
+            byteText = encryptor.mixColumns(byteText);
+            byteText = encryptor.addRoundKey(byteText,i+1);
         }
-        byteText = round.subBytes(byteText);
-        byteText = round.shiftRows(byteText);
-        byteText = round.addRoundKey(byteText,10);
+        byteText = encryptor.subBytes(byteText);
+        byteText = encryptor.shiftRows(byteText);
+        byteText = encryptor.addRoundKey(byteText,10);
 
         String encrypted = new String(flattenArray(byteText));
-        System.out.println(Arrays.toString(flattenArray(byteText)));
-        System.out.println(Base64.encodeBase64String(flattenArray(byteText)));
+      //  System.out.println(Base64.encodeBase64String(flattenArray(byteText)));
+        //System.out.println(encrypted);
 
-        System.out.println(encrypted);
+        return flattenArray(byteText);
+    }
+    public void runDecryptionAlgorithm(String key, byte[] text){
+        decryptor = new Decryptor(key);
+        byte[][] byteText = bytesToMatrix(text);
+
+        // Initial round key addition
+        byteText = decryptor.addRoundKey(byteText, 10);
+
+        for(int i = 9; i >= 0; i--){
+            byteText = decryptor.addRoundKey(byteText, i);
+            byteText = decryptor.invShiftRows(byteText);
+            byteText = decryptor.invSubBytes(byteText);
+
+            if (i > 0) {
+                byteText = decryptor.invMixColumns(byteText);
+            }
+        }
+
+        // Final round key addition
+        byteText = decryptor.addRoundKey(byteText, 0);
+
+        String decryptedText = new String(flattenArray(byteText));
+        //System.out.println("Dec "+Arrays.toString(flattenArray(byteText)));
+        //System.out.println(decryptedText);
+
     }
     private byte[] flattenArray(byte[][] arr){
         byte[] flat = new byte[16];
@@ -52,8 +76,20 @@ public class Runner {
                 index++;
             }
         }
-
         return byteArray;
     }
+    public byte[][] bytesToMatrix(byte[] byteArray) {
+        if (byteArray.length != 16) {
+            throw new IllegalArgumentException("Input array must be 16 bytes long.");
+        }
 
+        byte[][] matrix = new byte[4][4];
+        for (int i = 0; i < 4; i++) {
+            for (int j = 0; j < 4; j++) {
+                matrix[i][j] = byteArray[i * 4 + j];
+            }
+        }
+
+        return matrix;
+    }
 }

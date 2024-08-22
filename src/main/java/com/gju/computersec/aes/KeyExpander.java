@@ -1,4 +1,7 @@
 package com.gju.computersec.aes;
+import java.util.Arrays;
+
+import static com.gju.computersec.utils.ByteMath.S_BOX;
 
 public class KeyExpander {
 
@@ -40,6 +43,9 @@ public class KeyExpander {
 
         return expandedKey;
     }
+    public byte[][][] getRoundKeys(byte[] key){
+       return splitInto4x4Matrices(keyExpansion(key));
+    }
 
     private byte[] scheduleCore(byte[] word, int rconIndex) {
         // Rotate the word (RotWord)
@@ -53,12 +59,35 @@ public class KeyExpander {
         for (int i = 0; i < WORD_SIZE; i++) {
             int row = (word[i] >> 4) & 0x0F;
             int col = word[i] & 0x0F;
-            word[i] = (byte) Round.S_BOX[row][col];
+            word[i] = (byte) S_BOX[row][col];
         }
 
         // XOR the first byte with the round constant (Rcon)
         word[0] ^= RCON[rconIndex];
 
         return word;
+    }
+    public byte[][][] splitInto4x4Matrices(byte[] byteArray) {
+        int numMatrices = 11;
+        int bytesPerMatrix = 16; // 4x4 matrix
+        byte[][][] matrices = new byte[numMatrices][4][4];
+
+        for (int i = 0; i < numMatrices; i++) {
+            int start = i * bytesPerMatrix;
+            int end = Math.min(start + bytesPerMatrix, byteArray.length);
+
+            for (int row = 0; row < 4; row++) {
+                for (int col = 0; col < 4; col++) {
+                    int index = (row * 4 + col) + start;
+                    if (index < end) {
+                        matrices[i][row][col] = byteArray[index];
+                    } else {
+                        matrices[i][row][col] = 0; // Fill with 0 if not enough bytes
+                    }
+                }
+            }
+        }
+        //System.out.println(Arrays.deepToString(matrices));
+        return matrices;
     }
 }
