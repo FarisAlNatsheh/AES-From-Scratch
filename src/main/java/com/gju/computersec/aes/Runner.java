@@ -1,8 +1,5 @@
 package com.gju.computersec.aes;
 
-import org.apache.commons.codec.binary.Base64;
-
-import java.util.Arrays;
 
 public class Runner {
     Encryptor encryptor;
@@ -29,7 +26,7 @@ public class Runner {
 
         return flattenArray(byteText);
     }
-    public void runDecryptionAlgorithm(String key, byte[] text){
+    public String runDecryptionAlgorithm(String key, byte[] text){
         decryptor = new Decryptor(key);
         byte[][] byteText = bytesToMatrix(text);
 
@@ -37,22 +34,16 @@ public class Runner {
         byteText = decryptor.addRoundKey(byteText, 10);
 
         for(int i = 9; i >= 0; i--){
-            byteText = decryptor.addRoundKey(byteText, i);
+
             byteText = decryptor.invShiftRows(byteText);
             byteText = decryptor.invSubBytes(byteText);
-
+            byteText = decryptor.addRoundKey(byteText, i);
             if (i > 0) {
                 byteText = decryptor.invMixColumns(byteText);
             }
         }
-
-        // Final round key addition
-        byteText = decryptor.addRoundKey(byteText, 0);
-
         String decryptedText = new String(flattenArray(byteText));
-        //System.out.println("Dec "+Arrays.toString(flattenArray(byteText)));
-        //System.out.println(decryptedText);
-
+        return (decryptedText);
     }
     private byte[] flattenArray(byte[][] arr){
         byte[] flat = new byte[16];

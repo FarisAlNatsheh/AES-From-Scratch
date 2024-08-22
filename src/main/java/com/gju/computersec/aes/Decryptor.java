@@ -21,33 +21,42 @@ public class Decryptor {
                 newState[row][col] = INV_S_BOX[upper][lower];
             }
         }
+        //System.out.println("invSub: "+ toHex(flattenArray(newState)));
         return newState;
     }
-    public byte[][] invShiftRows(byte[][] state) {
-        byte temp;
+    public byte[][] invShiftRows(byte[][] input) {
+        byte[][] output = new byte[4][4];
 
-        temp = state[1][3];
-        state[1][3] = state[1][2];
-        state[1][2] = state[1][1];
-        state[1][1] = state[1][0];
-        state[1][0] = temp;
 
-        temp = state[2][0];
-        state[2][0] = state[2][2];
-        state[2][2] = temp;
-        temp = state[2][1];
-        state[2][1] = state[2][3];
-        state[2][3] = temp;
+        output[0][0] = input[0][0];
+        output[1][0] = input[1][0];
+        output[2][0] = input[2][0];
+        output[3][0] = input[3][0];
 
-        temp = state[3][0];
-        state[3][0] = state[3][1];
-        state[3][1] = state[3][2];
-        state[3][2] = state[3][3];
-        state[3][3] = temp;
+        output[0][1] = input[3][1];
+        output[1][1] = input[0][1];
+        output[2][1] = input[1][1];
+        output[3][1] = input[2][1];
 
-        return state;
+
+        output[0][2] = input[2][2];
+        output[1][2] = input[3][2];
+        output[2][2] = input[0][2];
+        output[3][2] = input[1][2];
+
+
+        output[0][3] = input[1][3];
+        output[1][3] = input[2][3];
+        output[2][3] = input[3][3];
+        output[3][3] = input[0][3];
+
+
+
+        //System.out.println("invShift: "+ toHex(flattenArray(output)));
+        return output;
     }
     public byte[][] invMixColumns(byte[][] state) {
+        state = transpose(state);
         int[] column = new int[4];
 
         for (int i = 0; i < 4; i++) {
@@ -62,10 +71,25 @@ public class Decryptor {
             state[2][i] = (byte) (mul13(column[0]) ^ mul9(column[1]) ^ mul14(column[2]) ^ mul11(column[3]));
             state[3][i] = (byte) (mul11(column[0]) ^ mul13(column[1]) ^ mul9(column[2]) ^ mul14(column[3]));
         }
+        state = transpose(state);
+        //System.out.println("invMix: "+ toHex(flattenArray(state)));
         return state;
     }
     public byte[][] addRoundKey(byte[][] state, int roundNum){
         state = xorByteArrays(state, roundKeys[roundNum]);
+        //System.out.println("used key: "+ toHex(flattenArray(roundKeys[roundNum])));
+        //System.out.println("rkey: "+ toHex(flattenArray(state)));
         return state;
+    }
+    private byte[] flattenArray(byte[][] arr){
+        byte[] flat = new byte[16];
+        int k = 0;
+        for(int i =0; i < 4; i++){
+            for(int j =0; j < 4; j++){
+                flat[k] = arr[i][j];
+                k++;
+            }
+        }
+        return flat;
     }
 }

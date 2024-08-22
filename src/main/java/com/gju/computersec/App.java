@@ -28,9 +28,10 @@ public class App
 
 
 
-        byte[] enc = new Runner().runEncryptionAlgorithm("ThisIsA16ByteKey","ThisIsA16ByteMey");
+        byte[] enc = new Runner().runEncryptionAlgorithm("ThisIsA16ByteKey","ThisIsA16ByteKey");
         System.out.println(Base64.encodeBase64String(enc));
-        new Runner().runDecryptionAlgorithm("ThisIsA16ByteKey", enc);
+        String decrypted = new Runner().runDecryptionAlgorithm("ThisIsA16ByteKey", enc);
+        System.out.println(decrypted);
     }
 
 
