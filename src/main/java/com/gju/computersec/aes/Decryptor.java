@@ -5,10 +5,9 @@ import java.nio.charset.StandardCharsets;
 import static com.gju.computersec.utils.ByteMath.*;
 
 public class Decryptor {
-    private byte[] keyBytes;
     private byte[][][] roundKeys;
     public Decryptor(String key){
-        keyBytes = key.getBytes(StandardCharsets.UTF_8);
+        byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
         roundKeys = (new KeyExpander().getRoundKeys(keyBytes));
     }
     public byte[][] invSubBytes(byte[][] state) {
@@ -81,15 +80,5 @@ public class Decryptor {
         //System.out.println("rkey: "+ toHex(flattenArray(state)));
         return state;
     }
-    private byte[] flattenArray(byte[][] arr){
-        byte[] flat = new byte[16];
-        int k = 0;
-        for(int i =0; i < 4; i++){
-            for(int j =0; j < 4; j++){
-                flat[k] = arr[i][j];
-                k++;
-            }
-        }
-        return flat;
-    }
+
 }
