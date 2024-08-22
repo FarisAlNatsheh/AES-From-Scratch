@@ -6,36 +6,36 @@ public class FileEncryptor {
 
     }
     public byte[] encrypt(byte[] file, String key){
-        System.out.println("Running encryption...");
+        System.err.println("Running encryption...");
         byte[] encryptedFile = new byte[0];
         file = padTo16(file);
         byte[][][] splitFile = splitInto2DArrays(file, 4);
 
 
-        System.out.println("Blocks:" + splitFile.length);
+        System.err.println("Blocks:" + splitFile.length);
 
-        System.out.println("Block Dimensions:" + splitFile[0].length + "x"+ splitFile[0][0].length);
+        System.err.println("Block Dimensions:" + splitFile[0].length + "x"+ splitFile[0][0].length);
 
 
         for(int i = 0; i < splitFile.length; i++) {
             byte[] block = new Runner().runEncryptionAlgorithm(key, splitFile[i]);
             encryptedFile = concatenate(encryptedFile, block);
         }
-        System.out.println("Encryption done!");
+        System.err.println("Encryption done!");
         return (encryptedFile);
 
     }
 
     public byte[] decrypt(byte[] file, String key){
-        System.out.println("Running decryption...");
+        System.err.println("Running decryption...");
         byte[] decryptedFile = new byte[0];
         //file = padTo16(file);
 
         byte[][][] splitFile = splitInto2DArrays(file, 4);
 
-        System.out.println("Blocks:" + splitFile.length);
+        System.err.println("Blocks:" + splitFile.length);
 
-        System.out.println("Block Dimensions:" + splitFile[0].length + "x"+ splitFile[0][0].length);
+        System.err.println("Block Dimensions:" + splitFile[0].length + "x"+ splitFile[0][0].length);
 
 
         for(int i = 0; i < splitFile.length; i++) {
@@ -47,7 +47,7 @@ public class FileEncryptor {
         byte lastByte = decryptedFile[decryptedFile.length - 1];
         int unsignedValue = lastByte & 0xFF;
         decryptedFile = trimArrayFromEnd(decryptedFile, unsignedValue);
-        System.out.println("Decryption done!");
+        System.err.println("Decryption done!");
         return decryptedFile;
     }
 
